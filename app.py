@@ -1,13 +1,7 @@
-from tkinter import BOTH, YES, X, LEFT, RIGHT, W, NS, NSEW, BOTTOM
+from pathlib import Path
+from tkinter import BOTH, YES, X, LEFT, RIGHT, W, NS, NSEW, BOTTOM, filedialog
+from PIL import Image, ImageTk
 import ttkbootstrap as ttk
-
-CLASSES = [
-    ("Bache",        "danger"),
-    ("Alcantarilla", "primary"),
-    ("Red",          "purple"),
-    ("Conos",        "warning"),
-    ("Ballena",      "success"),
-]
 
 CLASS_HEX = {
     "Bache":        "#ef4444",
@@ -24,6 +18,8 @@ class App(ttk.Window):
         self.title("Detector De Accesibilidad Urbana")
         self.geometry("1100x660")
         self.minsize(900, 560)
+        self._img_ref = None     
+        self.current_image = None   
         self._build_ui()
 
     def _build_ui(self):
@@ -74,7 +70,7 @@ class App(ttk.Window):
         ttk.Button(
             sidebar, text="  Cargar imagen",
             bootstyle="primary-outline", width=22,
-            command=lambda: None,
+            command=self._load_image,
         ).pack(padx=16, pady=3, fill=X)
 
         ttk.Button(
@@ -107,7 +103,6 @@ class App(ttk.Window):
                 foreground="#000000", background=bg,
             ).pack(side=LEFT)
 
-
     # ── Área principal ─────────────────────────────────────────────────────────
     def _build_main(self, parent):
         main = ttk.Frame(parent)
@@ -115,41 +110,67 @@ class App(ttk.Window):
         main.rowconfigure(0, weight=1)
         main.columnconfigure(0, weight=1)
 
-        card = ttk.LabelFrame(main, text="Vista previa")
-        card.grid(row=0, column=0, sticky=NSEW)
-        card.rowconfigure(0, weight=1)
-        card.columnconfigure(0, weight=1)
+        self._card = ttk.LabelFrame(main, text="Vista previa")
+        self._card.grid(row=0, column=0, sticky=NSEW)
+        self._card.rowconfigure(0, weight=1)
+        self._card.columnconfigure(0, weight=1)
 
-        placeholder = ttk.Frame(card)
-        placeholder.grid(row=0, column=0, padx=20, pady=20)
+        # Placeholder
+        self._placeholder = ttk.Frame(self._card)
+        self._placeholder.grid(row=0, column=0)
 
         ttk.Label(
-            placeholder,
-            text="↑",
-            font=("Segoe UI", 52),
-            bootstyle="secondary",
+            self._placeholder, text="↑",
+            font=("Segoe UI", 52), bootstyle="secondary",
         ).pack(pady=(40, 8))
-
         ttk.Label(
-            placeholder,
+            self._placeholder,
             text="Carga una imagen para comenzar",
-            font=("Segoe UI", 13),
-            bootstyle="secondary",
+            font=("Segoe UI", 13), bootstyle="secondary",
         ).pack()
-
         ttk.Label(
-            placeholder,
-            text="JPG  ·  JPEG  ·  PNG",
-            font=("Segoe UI", 9),
-            bootstyle="secondary",
+            self._placeholder, text="JPG  ·  JPEG  ·  PNG",
+            font=("Segoe UI", 9), bootstyle="secondary",
         ).pack(pady=(4, 16))
-
         ttk.Button(
-            placeholder,
-            text="Seleccionar archivo",
+            self._placeholder, text="Seleccionar archivo",
             bootstyle="primary-outline",
-            command=lambda: None,
+            command=self._load_image,
         ).pack()
+
+        self._image_label = ttk.Label(self._card)
+
+    # ── Carga de imagen ───────────────
+    def _load_image(self):
+        path = filedialog.askopenfilename(
+            title="Seleccionar imagen",
+            filetypes=[("Imágenes", "*.jpg *.jpeg *.png"),
+                       ("Todos los archivos", "*.*")],
+        )
+        if not path:
+            return
+
+        self.current_image = Image.open(path)
+        self._display_image(self.current_image)
+        self._status_var.set(f"Imagen cargada: {Path(path).name}")
+
+    def _display_image(self, img: Image.Image):
+        # Espera a que el card tenga dimensiones reales
+        self.update_idletasks()
+        max_w = max(self._card.winfo_width() - 20, 400)
+        max_h = max(self._card.winfo_height() - 20, 300)
+
+        # Redimensiona manteniendo proporción
+        img_copy = img.copy()
+        img_copy.thumbnail((max_w, max_h), Image.LANCZOS)
+
+        photo = ImageTk.PhotoImage(img_copy)
+        self._img_ref = photo  # evita garbage collection
+
+        # Oculta placeholder y muestra imagen
+        self._placeholder.grid_remove()
+        self._image_label.configure(image=photo)
+        self._image_label.grid(row=0, column=0, padx=10, pady=10)
 
     # ── Status bar ─────────────────────────────────────────────────────────────
     def _build_statusbar(self):
@@ -157,6 +178,15 @@ class App(ttk.Window):
 
         bar = ttk.Frame(self, bootstyle="light")
         bar.pack(fill=X, side=BOTTOM)
+
+        self._status_var = ttk.StringVar(value="Listo  ·  Sin imagen cargada")
+        ttk.Label(
+            bar,
+            textvariable=self._status_var,
+            font=("Segoe UI", 9),
+            bootstyle="secondary",
+        ).pack(side=LEFT, padx=16, pady=5)
+
 
 if __name__ == "__main__":
     App().mainloop()
