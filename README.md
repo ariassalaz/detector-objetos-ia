@@ -39,7 +39,7 @@ pip install -r requirements.txt
 
 ## Integrantes del Equipo
 
-| Nombre | Matrícula | Rol |
+| Nombre | Matrícula |
 |--------|-----------|-----|
 | Ricardo Arias Salazar | 22130809 |
 | María del Carmen Bracho Félix | 221000121 |
