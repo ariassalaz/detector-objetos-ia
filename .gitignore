@@ -1,1 +1,39 @@
-.venv
+# Entorno virtual
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Modelos entrenados (archivos grandes)
+models/*.pt
+models/*.onnx
+models/*.engine
+
+# Resultados de YOLO
+runs/
+*.cache
+
+# Variables de entorno
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
