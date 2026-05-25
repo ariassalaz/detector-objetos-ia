@@ -10,16 +10,6 @@ El proyecto utiliza técnicas avanzadas de visión por computadora para identifi
 
 Desarrollar e implementar un modelo detector de objetos utilizando un dataset personalizado
 
-## Integrantes del Equipo
-
-| Nombre | Matrícula |
-|--------|-----------|
-| Ricardo Arias Salazar | 22130809 |
-| María del Carmen Bracho Félix | 221000121 |
-| Santiago Orozco Rimada | 22130840 |
-| Sofía Alejandra Gutiérrez Hernández | 22130870 |
-| Daniela María González Lara | 22130812 |
-
 ## Instalación y Configuración
 
 ### Requisitos Previos
