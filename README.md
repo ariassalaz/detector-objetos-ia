@@ -1,43 +1,61 @@
-# Detector de Objetos con Dataset Personalizado
+# Detector de Objetos Urbanos
 
-## Descripción
+Aplicación de escritorio para detección de objetos urbanos usando YOLOv8 y tkinter.
+Detecta elementos que afectan la accesibilidad en ciudades como Gómez Palacio y Torreón.
 
-**Detector de Objetos IA** es un proyecto con enfoque de **impacto social e inclusión**, orientado a desarrollar un modelo detector de objetos multiclase utilizando un dataset personalizado de temática libre. El proyecto abarca desde la recopilación y etiquetado de datos hasta el entrenamiento y evaluación del modelo.
+## Clases detectadas
 
-El proyecto utiliza técnicas avanzadas de visión por computadora para identificar y analizar elementos urbanos que afectan la accesibilidad de personas con capacidades diferentes en ciudades como Gómez Palacio y Torreón.
+| Clase | Descripción |
+|-------|-------------|
+| Bache | Hundimiento en el pavimento |
+| Alcantarilla | Tapa de alcantarilla en la vía |
+| Red | Redes o cables en el suelo |
+| Conos | Conos de señalización vial |
+| Ballena | Topes de estacionamiento |
 
-## Objetivo General
-
-Desarrollar e implementar un modelo detector de objetos utilizando un dataset personalizado
-
-## Instalación y Configuración
-
-### Requisitos Previos
-- Python 3.13 instalado
-- Git
-- pip (gestor de paquetes de Python)
-
-### Pasos de Instalación
+## Instalación
 
 ```bash
 # 1. Clonar el repositorio
 git clone https://github.com/ariassalaz/detectorObjetosIA.git
 cd detectorObjetosIA
 
-# 2. Crear entorno virtual
-python -m venv venv
+# 2. Crear y activar entorno virtual
+python -m venv .venv
+.venv\Scripts\activate      # Windows
+source .venv/bin/activate   # macOS/Linux
 
-# 3. Activar entorno virtual
-# En Windows:
-venv\Scripts\activate
-# En macOS/Linux:
-source venv/bin/activate
-
-# 4. Instalar dependencias
+# 3. Instalar dependencias
 pip install -r requirements.txt
 ```
 
-## Integrantes del Equipo
+## Cómo ejecutar
+
+### 1. Activar el entorno virtual
+
+```bash
+# Windows
+.venv\Scripts\activate
+
+# macOS / Linux
+source .venv/bin/activate
+```
+
+### 2. Instalar dependencias (solo la primera vez)
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Iniciar la aplicación
+
+```bash
+python app.py
+```
+
+Se abrirá la ventana de escritorio del detector.
+
+## Equipo
 
 | Nombre | Matrícula |
 |--------|-----------|
