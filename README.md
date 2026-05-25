@@ -41,8 +41,8 @@ pip install -r requirements.txt
 
 | Nombre | Matrícula | Rol |
 |--------|-----------|-----|
-| Ricardo Arias Salazar | 22130809 | Líder técnico |
-| María del Carmen Bracho Félix | 221000121 | Procesamiento de datos |
-| Santiago Orozco Rimada | 22130840 | Entrenamiento del modelo |
-| Sofía Alejandra Gutiérrez Hernández | 22130870 | Evaluación y análisis |
-| Daniela María González Lara | 22130812 | Documentación y reporte |
+| Ricardo Arias Salazar | 22130809 |
+| María del Carmen Bracho Félix | 221000121 |
+| Santiago Orozco Rimada | 22130840 |
+| Sofía Alejandra Gutiérrez Hernández | 22130870 |
+| Daniela María González Lara | 22130812 |
