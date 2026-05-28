@@ -10,9 +10,9 @@ dist/
 build/
 
 # Modelos entrenados (archivos grandes)
-# models/*.pt
-# models/*.onnx
-# models/*.engine
+models/*.pt
+models/*.onnx
+models/*.engine
 
 # Resultados de YOLO
 runs/
