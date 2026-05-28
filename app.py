@@ -2,6 +2,8 @@ from pathlib import Path
 from tkinter import BOTH, YES, X, LEFT, RIGHT, W, NS, NSEW, BOTTOM, filedialog
 from PIL import Image, ImageTk
 import ttkbootstrap as ttk
+from ultralytics import YOLO 
+import numpy as np
 
 CLASS_HEX = {
     "Bache":        "#ef4444",
@@ -20,6 +22,11 @@ class App(ttk.Window):
         self.minsize(900, 560)
         self._img_ref = None     
         self.current_image = None   
+        
+        # <-- CARGAR EL MODELO AQUÍ -->
+        print("Cargando modelo de IA...")
+        self.model = YOLO("models/best.pt")
+        
         self._build_ui()
 
     def _build_ui(self):
@@ -76,7 +83,7 @@ class App(ttk.Window):
         ttk.Button(
             sidebar, text="  Detectar",
             bootstyle="success", width=22,
-            command=lambda: None,
+            command=self._detect_objects,
         ).pack(padx=16, pady=3, fill=X)
 
         ttk.Separator(sidebar).pack(fill=X, padx=16, pady=14)
@@ -186,6 +193,31 @@ class App(ttk.Window):
             font=("Segoe UI", 9),
             bootstyle="secondary",
         ).pack(side=LEFT, padx=16, pady=5)
+
+    # ── Detección con YOLOv8 ───────────────────────────────────────────────────
+    def _detect_objects(self):
+        # Verificar si hay una imagen cargada
+        if self.current_image is None:
+            self._status_var.set("Error: Primero carga una imagen para analizar.")
+            return
+
+        self._status_var.set("Analizando imagen con IA...")
+        self.update_idletasks() # Actualiza el texto en la interfaz
+
+        # 1. Hacer la predicción con tu modelo
+        results = self.model.predict(source=self.current_image, conf=0.25)
+
+        # 2. Extraer la imagen resultante con los cuadros ya dibujados
+        # YOLO devuelve la imagen en formato BGR (OpenCV)
+        res_plotted = results[0].plot()
+
+        # 3. Convertir los colores de BGR a RGB para que PIL (Tkinter) los entienda bien
+        res_rgb = res_plotted[..., ::-1]
+        detected_img = Image.fromarray(res_rgb)
+
+        # 4. Mostrar la nueva imagen en la interfaz
+        self._display_image(detected_img)
+        self._status_var.set("¡Detección completada con éxito!")
 
 
 if __name__ == "__main__":
