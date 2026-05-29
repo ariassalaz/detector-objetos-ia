@@ -14,10 +14,6 @@ build/
 # models/*.onnx
 # models/*.engine
 
-# Resultados de YOLO
-runs/
-*.cache
-
 # Variables de entorno
 .env
 
