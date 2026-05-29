@@ -34,7 +34,7 @@ class App(ttk.Window):
         self.analyzed_image = None  
         
         print("Cargando modelo de IA...")
-        self.model = YOLO("models/best.pt")
+        self.model = YOLO("models/best.pt/best")
         
         self._build_ui()
 
