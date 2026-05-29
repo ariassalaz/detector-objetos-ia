@@ -2,9 +2,6 @@ from pathlib import Path
 from tkinter import BOTH, YES, X, LEFT, RIGHT, W, NS, NSEW, BOTTOM, filedialog
 from PIL import Image, ImageTk
 import ttkbootstrap as ttk
-from ultralytics import YOLO 
-import numpy as np
-import os
 
 CLASS_HEX = {
     "Bache":        "#ef4444",
@@ -14,28 +11,15 @@ CLASS_HEX = {
     "Ballena":      "#10b981",
 }
 
-TIPS_SEGURIDAD = {
-    "Bache":        "Riesgo de daño estructural o caída. Reduce la velocidad inmediatamente!",
-    "Alcantarilla": "Peligro de hundimiento o neumático atorado!",
-    "Red":          "Zona de obras activa. Mantener distancia por caída de escombros!",
-    "Conos":        "Desvío u obstáculo temporal. Cambia de carril con precaución!",
-    "Ballena":      "Barrera rígida de seguridad. Con cuidado!",
-}
-
 
 class App(ttk.Window):
     def __init__(self):
         super().__init__(themename="flatly")
         self.title("Detector De Accesibilidad Urbana")
-        self.geometry("1100x740") 
-        self.minsize(950, 640)
+        self.geometry("1100x660")
+        self.minsize(900, 560)
         self._img_ref = None     
         self.current_image = None   
-        self.analyzed_image = None  
-        
-        print("Cargando modelo de IA...")
-        self.model = YOLO("models/best.pt/best")
-        
         self._build_ui()
 
     def _build_ui(self):
@@ -70,7 +54,7 @@ class App(ttk.Window):
 
     # ── Sidebar ───────────
     def _build_sidebar(self, parent):
-        sidebar = ttk.Frame(parent, bootstyle="light", width=230)
+        sidebar = ttk.Frame(parent, bootstyle="light", width=210)
         sidebar.grid(row=0, column=0, sticky=NS, padx=(0, 16), pady=16)
         sidebar.pack_propagate(False)
 
@@ -92,16 +76,8 @@ class App(ttk.Window):
         ttk.Button(
             sidebar, text="  Detectar",
             bootstyle="success", width=22,
-            command=self._detect_objects,
+            command=lambda: None,
         ).pack(padx=16, pady=3, fill=X)
-
-        self.btn_save = ttk.Button(
-            sidebar, text="  Guardar resultado",
-            bootstyle="secondary", width=22,
-            command=self._save_report,
-            state="disabled"
-        )
-        self.btn_save.pack(padx=16, pady=3, fill=X)
 
         ttk.Separator(sidebar).pack(fill=X, padx=16, pady=14)
 
@@ -126,28 +102,6 @@ class App(ttk.Window):
                 font=("Segoe UI", 10),
                 foreground="#000000", background=bg,
             ).pack(side=LEFT)
-
-        ttk.Separator(sidebar).pack(fill=X, padx=16, pady=14)
-
-        # Panel de Resultados 
-        self.stats_panel = ttk.LabelFrame(sidebar, text=" Resultados del Análisis ")
-        self.stats_panel.pack(fill=X, padx=16, pady=5, side=BOTTOM)
-        
-        self.lbl_total = ttk.Label(self.stats_panel, text="Objetos: -", font=("Segoe UI", 10))
-        self.lbl_total.pack(anchor=W, padx=10, pady=4)
-        
-        self.lbl_detail = ttk.Label(self.stats_panel, text="Esperando análisis...", font=("Segoe UI", 9), bootstyle="secondary")
-        self.lbl_detail.pack(anchor=W, padx=10, pady=(0, 4))
-
-        #Alerta de seguridad dinamica
-        self.lbl_tip = ttk.Label(
-            self.stats_panel, 
-            text="", 
-            font=("Segoe UI", 8, "italic"), 
-            wraplength=190,  
-            justify=LEFT
-        )
-        self.lbl_tip.pack(anchor=W, padx=10, pady=(4, 8))
 
     # ── Área principal ─────────────────────────────────────────────────────────
     def _build_main(self, parent):
@@ -197,27 +151,23 @@ class App(ttk.Window):
             return
 
         self.current_image = Image.open(path)
-        self.analyzed_image = None 
-        self.btn_save.configure(state="disabled", bootstyle="secondary")
-        
-        self.lbl_total.configure(text="Objetos: -")
-        self.lbl_detail.configure(text="Esperando análisis...", bootstyle="secondary")
-        self.lbl_tip.configure(text="") 
-
         self._display_image(self.current_image)
         self._status_var.set(f"Imagen cargada: {Path(path).name}")
 
     def _display_image(self, img: Image.Image):
+        # Espera a que el card tenga dimensiones reales
         self.update_idletasks()
         max_w = max(self._card.winfo_width() - 20, 400)
         max_h = max(self._card.winfo_height() - 20, 300)
 
+        # Redimensiona manteniendo proporción
         img_copy = img.copy()
         img_copy.thumbnail((max_w, max_h), Image.LANCZOS)
 
         photo = ImageTk.PhotoImage(img_copy)
-        self._img_ref = photo  
+        self._img_ref = photo  # evita garbage collection
 
+        # Oculta placeholder y muestra imagen
         self._placeholder.grid_remove()
         self._image_label.configure(image=photo)
         self._image_label.grid(row=0, column=0, padx=10, pady=10)
@@ -236,81 +186,6 @@ class App(ttk.Window):
             font=("Segoe UI", 9),
             bootstyle="secondary",
         ).pack(side=LEFT, padx=16, pady=5)
-
-    # ── Detección con YOLOv8 ───────────────────────────────────────────────────
-    def _detect_objects(self):
-        if self.current_image is None:
-            self._status_var.set("Error: Primero carga una imagen para analizar.")
-            return
-
-        self._status_var.set("Analizando imagen con IA...")
-        self.update_idletasks() 
-
-        # predicción con el modelo
-        results = self.model.predict(source=self.current_image, conf=0.25)
-
-        # extraemos tiempos de procesamiento 
-        speed_info = results[0].speed
-        tiempo_total_ms = speed_info['preprocess'] + speed_info['inference'] + speed_info['postprocess']
-
-        # Conteo de objetos y clases detectadas
-        boxes = results[0].boxes
-        total_objetos = len(boxes)
-        
-        conteos = {}
-        clase_principal = None
-        max_confianza = -1
-
-        if total_objetos > 0:
-            for box in boxes:
-                cls_id = int(box.cls[0])
-                cls_name = results[0].names[cls_id]
-                conf = float(box.conf[0])
-                
-                conteos[cls_name] = conteos.get(cls_name, 0) + 1
-                
-                #  objeto con la confianza mas alta para mostrar el tip
-                if conf > max_confianza:
-                    max_confianza = conf
-                    clase_principal = cls_name
-
-        self.lbl_total.configure(text=f"Objetos: {total_objetos}")
-        if total_objetos > 0:
-            texto_detalle = "\n".join([f"• {k}: {v}" for k, v in conteos.items()])
-            self.lbl_detail.configure(text=texto_detalle, bootstyle="success")
-            
-            # tip en base a la clase con mayor confianza
-            if clase_principal in TIPS_SEGURIDAD:
-                self.lbl_tip.configure(text=TIPS_SEGURIDAD[clase_principal], bootstyle="warning")
-        else:
-            self.lbl_detail.configure(text="Calle limpia / Sin riesgos", bootstyle="warning")
-            self.lbl_tip.configure(text="✨ Vía segura para el tránsito urbano.", bootstyle="success")
-
-        res_plotted = results[0].plot()
-
-        res_rgb = res_plotted[..., ::-1]
-        self.analyzed_image = Image.fromarray(res_rgb)
-
-        self._display_image(self.analyzed_image)
-        
-        #guardar resultado
-        self.btn_save.configure(state="normal", bootstyle="info")
-        self._status_var.set(f"¡Detección completada con éxito! | Tiempo de procesamiento: {tiempo_total_ms:.1f} ms")
-
-    def _save_report(self):
-        if self.analyzed_image is None:
-            return
-            
-        path_guardar = filedialog.asksaveasfilename(
-            title="Guardar imagen procesada",
-            defaultextension=".jpg",
-            filetypes=[("Imagen JPEG", "*.jpg"), ("Imagen PNG", "*.png")],
-            initialfile="reporte_obstaculo.jpg"
-        )
-        
-        if path_guardar:
-            self.analyzed_image.save(path_guardar)
-            self._status_var.set(f"¡Reporte guardado con éxito en: {Path(path_guardar).name}!")
 
 
 if __name__ == "__main__":

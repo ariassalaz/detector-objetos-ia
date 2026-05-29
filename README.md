@@ -39,7 +39,28 @@ pip install -r requirements.txt
 
 # macOS / Linux
 source .venv/bin/activate
+```
 
+### 2. Instalar dependencias (solo la primera vez)
+
+```bash
 pip install -r requirements.txt
+```
 
+### 3. Iniciar la aplicación
+
+```bash
 python app.py
+```
+
+Se abrirá la ventana de escritorio del detector.
+
+## Equipo
+
+| Nombre | Matrícula |
+|--------|-----------|
+| Ricardo Arias Salazar | 22130809 |
+| María del Carmen Bracho Félix | 221000121 |
+| Santiago Orozco Rimada | 22130840 |
+| Sofía Alejandra Gutiérrez Hernández | 22130870 |
+| Daniela María González Lara | 22130812 |
